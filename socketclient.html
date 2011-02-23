@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>chat demo</title>
+		<script src="http://localhost:8080/socket.io/socket.io.js"></script> 
+		<script> 
+		var socket = new io.Socket("localhost", { port: 8080 }); 
+	    socket.on('connect', function(){ checkCon(); }) 
+		socket.on('message', function(data) {
+			if (typeof(data.msg) === "object") {
+				var clist = document.getElementById('clist')
+				clist.innerHTML = "";
+				data.msg.clients.forEach(function(client) {
+					clist.innerHTML += client+"<br/>"
+				})
+				return
+			}
+			var mbox = document.getElementById('msgbox')
+			var elem = document.createElement('div')
+			if (data.sender == 'server') {
+				elem.className = 'server'
+				elem.innerHTML = data.msg
+			} else {
+				elem.className = 'msg'
+				elem.innerHTML = '<span>'+data.sender+'</span><span>'+data.msg+'</span>'
+			}
+			mbox.appendChild(elem)
+			mbox.scrollTop = elem.offsetTop
+		}) 
+		socket.on('disconnect', function(){	}) 
+		
+		socket.connect();
+		function sendData() {
+			var elem_msg = document.getElementById('send_msg')
+			if (elem_msg.value.replace(' ','').length > 0) {
+				socket.send(elem_msg.value)
+				elem_msg.value=''
+			}
+			
+		}
+		function checkInput(e) {
+			if (e.keyCode == 13)
+				sendData()
+			return true
+		}
+		function checkCon() {
+			if (socket.connected==false) {
+				var mbox = document.getElementById('msgbox')
+				var elem = document.createElement('div')
+				elem.className = 'server'
+				elem.innerHTML = '*** You have been disconnected (timeout)'
+				mbox.appendChild(elem)
+				mbox.scrollTop = elem.offsetTop
+			} else {
+				setTimeout('checkCon()', 500)
+			}
+		}
+		</script>
+		<style>
+		* { padding:0; margin:0; }
+		html,body {
+			background: #9bbd5f;
+		    background-image: -webkit-gradient(linear, left top, left bottom, from(rgba(220, 240, 200, 1.0)), to(rgba(140, 210, 100, 1.0)));
+		    background-image: -moz-linear-gradient(-90deg, rgba(220, 240, 200, 1.0), rgba(140, 210, 100, 1.0));
+			width:100%;
+			height:100%;
+		}
+		
+		h1 {
+			font-family: Arial, verdana;
+			font-size: 1.85em;
+			color: #444;
+		}
+		div#wrapper {
+			width:830px;
+			margin: 0 auto;
+			padding-top: 40px;
+		}
+		div#msgbox, div#clientlist {
+			height:500px;
+			float:left;
+			background: #fff;
+			border-radius: 6px;
+			-moz-border-radius: 6px;
+			
+			padding:10px;
+		}
+		div#msgbox {
+			width:580px;
+			margin-right:30px;
+			overflow:auto;
+		}
+		div#clientlist {
+			width:160px;
+		}
+		div > div.msg > span:first-child {
+			font-weight:bold;
+			float:left;
+			width:100px;
+			display:block;
+			text-align:right;
+			margin-right: 10px;
+		}
+		div > div.msg:nth-child(odd) {
+			background: #f5f9ef;
+			-moz-border-radius: 4px;
+			border-radius:4px;
+		}
+		div.msg {
+			clear:both;
+			overflow: auto;
+		}
+		div > div.server {
+			color: red;
+			font-weight:bold;
+			font-style: italic;
+			padding: 5px 10px;
+			clear:both;
+		}
+		input[type="text"] {
+			font-size:1.2em;
+			padding:5px;
+			width:590px;
+			margin:10px 0;
+			border:0;
+			border-radius: 5px;
+			-moz-border-radius:5px;
+			margin-right:30px;
+		}
+		input[type="text"] + span {
+			font-family: verdana;
+			font-size:.9em
+		}
+		div#footer {
+			position:absolute;
+			bottom:0;
+			left:0;
+			right:0;
+			height:50px;
+			background: #DCF0C8;
+		}
+		div#footer > p {
+			line-height:50px;
+			text-align:center;
+		}
+		</style>
+	</head>
+	<body>
+		<div id="wrapper">
+			<div id="msgbox">
+				<h1>Chat</h1>
+			</div>
+			<div id="clientlist">
+				<h1>Online</h1>
+				<div id="clist">
+				</div>
+			</div>
+				<input type="text" id="send_msg" onkeydown="return checkInput(event);" />
+				<span>/name *new name*</span>
+		</div>
+		
+		<div id="footer">
+			<p>chat demo using <a href="http://nodejs.org">node.js</a> and <a href="http://socket.io">socket.io</a> / <a href="https://github.com/bjorkstam/node-simple-chat-demo">source code @ github</a> / written by <a href="http://www.twitter.com/bjorkstam/">Mikael Bjorkstam</a></p>
+		</div>
+				
+	</body>
+</html>
